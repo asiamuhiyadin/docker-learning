@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="page-header__eyebrow">SYSTEM OVERVIEW</div>
+  <h1 class="page-header__title">Mission Control<span class="page-header__cursor">▋</span></h1>
+  <p class="page-header__sub">Real-time telemetry from a containerised Flask + Redis cluster.</p>
+</section>
+
+<div class="stats-grid">
+  <div class="card card--accent" data-aos="fade-up">
+    <div class="card__label">TOTAL REQUESTS</div>
+    <div class="card__value counter" data-target="{{ total_visits }}">0</div>
+    <div class="card__sub">across all containers</div>
+    <div class="card__bar"><div class="card__bar-fill" style="width: 100%"></div></div>
+  </div>
+  <div class="card" data-aos="fade-up" data-aos-delay="60">
+    <div class="card__label">TODAY'S HITS</div>
+    <div class="card__value counter" data-target="{{ today_visits }}">0</div>
+    <div class="card__sub">rolling 24 h window</div>
+    <div class="card__bar"><div class="card__bar-fill" style="width: {{ [today_visits * 10, 100] | min }}%"></div></div>
+  </div>
+  <div class="card" data-aos="fade-up" data-aos-delay="120">
+    <div class="card__label">CONTAINER NODE</div>
+    <div class="card__value card__value--mono card__value--sm">{{ container_id[:12] }}</div>
+    <div class="card__sub">Nginx load-balanced</div>
+    <div class="card__bar"><div class="card__bar-fill card__bar-fill--blue" style="width: 70%"></div></div>
+  </div>
+  <div class="card" data-aos="fade-up" data-aos-delay="180">
+    <div class="card__label">SYSTEM UPTIME</div>
+    <div class="card__value card__value--mono">{{ uptime }}</div>
+    <div class="card__sub">Python {{ python_version }}</div>
+    <div class="card__bar"><div class="card__bar-fill card__bar-fill--purple" style="width: 88%"></div></div>
+  </div>
+</div>
+
+<div class="twin-grid">
+  <div class="panel" data-aos="fade-right">
+    <div class="panel__header">
+      <span class="panel__title">WEEKLY TRAFFIC</span>
+      <span class="panel__badge">7-DAY</span>
+    </div>
+    <div class="chart-wrap"><canvas id="trafficChart"></canvas></div>
+  </div>
+  <div class="panel" data-aos="fade-left">
+    <div class="panel__header">
+      <span class="panel__title">SERVICE STATUS</span>
+      <span class="panel__badge panel__badge--live">LIVE</span>
+    </div>
+    <ul class="service-list">
+      <li class="service-list__item"><span class="dot dot--pulse dot--green"></span><span class="service-list__name">Nginx Reverse Proxy</span><span class="service-list__tag">:5002</span></li>
+      <li class="service-list__item"><span class="dot dot--pulse dot--green"></span><span class="service-list__name">Flask App Cluster</span><span class="service-list__tag">:5000</span></li>
+      <li class="service-list__item"><span class="dot dot--pulse {% if redis_ok %}dot--green{% else %}dot--red{% endif %}"></span><span class="service-list__name">Redis Data Store</span><span class="service-list__tag">:6379</span></li>
+      <li class="service-list__item"><span class="dot dot--green"></span><span class="service-list__name">Docker Volume (Persist)</span><span class="service-list__tag">redis-data</span></li>
+      <li class="service-list__item"><span class="dot dot--green"></span><span class="service-list__name">Container Network</span><span class="service-list__tag">bridge</span></li>
+    </ul>
+    <div class="panel__footer">
+      <a href="/health" class="btn btn--ghost" target="_blank">↗ /health endpoint</a>
+      <a href="/api/stats" class="btn btn--ghost" target="_blank">↗ /api/stats</a>
+    </div>
+  </div>
+</div>
+
+<div class="flow-banner" data-aos="fade-up">
+  <span class="flow-banner__label">REQUEST FLOW</span>
+  <div class="flow-banner__steps">
+    <div class="flow-step"><div class="flow-step__icon">🌐</div><div class="flow-step__name">Browser</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="flow-step__icon">⚡</div><div class="flow-step__name">Nginx</div><div class="flow-step__sub">:5002</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="flow-step__icon">🐍</div><div class="flow-step__name">Flask</div><div class="flow-step__sub">×N containers</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="flow-step__icon">🔴</div><div class="flow-step__name">Redis</div><div class="flow-step__sub">persist</div></div>
+  </div>
+  <a href="/pipeline" class="flow-banner__cta">Explore pipeline →</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const weeklyData = {{ weekly_traffic | tojson }};
+  initTrafficChart(weeklyData);
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Mission Control{% endblock %} // DevOps Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="statusbar">
+    <span class="statusbar__item">
+      <span class="dot dot--pulse {% if redis_ok %}dot--green{% else %}dot--red{% endif %}"></span>
+      REDIS {{ 'ONLINE' if redis_ok else 'OFFLINE' }}
+    </span>
+    <span class="statusbar__item statusbar__brand">◈ DEVOPS MISSION CONTROL</span>
+    <span class="statusbar__item statusbar__right">NODE: <code>{{ container_id }}</code></span>
+  </div>
+  <nav class="nav">
+    <a href="/" class="nav__logo"><span class="nav__logo-bracket">[</span>ASIA<span class="nav__logo-bracket">]</span></a>
+    <ul class="nav__links">
+      <li><a href="/" class="nav__link {% if request.path == '/' %}nav__link--active{% endif %}"><span class="nav__link-icon">◉</span> Dashboard</a></li>
+      <li><a href="/pipeline" class="nav__link {% if request.path == '/pipeline' %}nav__link--active{% endif %}"><span class="nav__link-icon">⇢</span> Pipeline</a></li>
+      <li><a href="/stack" class="nav__link {% if request.path == '/stack' %}nav__link--active{% endif %}"><span class="nav__link-icon">⬡</span> Stack</a></li>
+      <li><a href="/about" class="nav__link {% if request.path == '/about' %}nav__link--active{% endif %}"><span class="nav__link-icon">◈</span> About</a></li>
+      <li><a href="/health" class="nav__link nav__link--health" target="_blank"><span class="nav__link-icon">♥</span> Health</a></li>
+    </ul>
+    <button class="nav__burger" id="navBurger" aria-label="Toggle menu">☰</button>
+  </nav>
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    <span>Built by <strong>Asia</strong> &nbsp;·&nbsp; Flask + Redis + Docker + Nginx</span>
+    <span class="footer__timestamp" id="liveTime"></span>
+  </footer>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

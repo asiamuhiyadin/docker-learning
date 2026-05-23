@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Stack{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="page-header__eyebrow">TECHNOLOGY INVENTORY</div>
+  <h1 class="page-header__title">The Stack<span class="page-header__cursor">▋</span></h1>
+  <p class="page-header__sub">Every layer, its role, and why it was chosen.</p>
+</section>
+
+<div class="stack-grid">
+  <div class="stack-card" data-aos="fade-up">
+    <div class="stack-card__header"><span class="stack-card__icon">🐍</span><div><div class="stack-card__name">Python Flask</div><div class="stack-card__version">v3.x · WSGI</div></div><span class="stack-badge stack-badge--green">RUNTIME</span></div>
+    <p class="stack-card__desc">Lightweight WSGI micro-framework. Chosen for its zero-boilerplate routing, Jinja2 templating, and suitability for demonstrating stateless container design.</p>
+    <div class="stack-card__tags"><span class="tag">Routing</span><span class="tag">Templates</span><span class="tag">JSON API</span></div>
+  </div>
+  <div class="stack-card" data-aos="fade-up" data-aos-delay="60">
+    <div class="stack-card__header"><span class="stack-card__icon">🔴</span><div><div class="stack-card__name">Redis</div><div class="stack-card__version">v7.x · In-Memory</div></div><span class="stack-badge stack-badge--red">DATA</span></div>
+    <p class="stack-card__desc">Sub-millisecond key-value store used for visit counters and daily traffic analytics. RDB persistence via Docker volume ensures data survives restarts.</p>
+    <div class="stack-card__tags"><span class="tag">Counters</span><span class="tag">Persistence</span><span class="tag">TTL keys</span></div>
+  </div>
+  <div class="stack-card" data-aos="fade-up" data-aos-delay="120">
+    <div class="stack-card__header"><span class="stack-card__icon">⚡</span><div><div class="stack-card__name">Nginx</div><div class="stack-card__version">v1.25 · HTTP server</div></div><span class="stack-badge stack-badge--orange">PROXY</span></div>
+    <p class="stack-card__desc">Acts as the single public entry-point on port 5002. Terminates HTTP, applies round-robin load balancing across Flask replicas, and adds forwarded-for headers.</p>
+    <div class="stack-card__tags"><span class="tag">Load Balancing</span><span class="tag">Reverse Proxy</span><span class="tag">Header Rewrite</span></div>
+  </div>
+  <div class="stack-card" data-aos="fade-up" data-aos-delay="180">
+    <div class="stack-card__header"><span class="stack-card__icon">🐳</span><div><div class="stack-card__name">Docker</div><div class="stack-card__version">v25+ · OCI containers</div></div><span class="stack-badge stack-badge--blue">CONTAINER</span></div>
+    <p class="stack-card__desc">Each service runs in an isolated container with its own filesystem and network namespace. Multi-stage Dockerfile keeps the Flask image lean and production-ready.</p>
+    <div class="stack-card__tags"><span class="tag">Isolation</span><span class="tag">Portability</span><span class="tag">Multi-stage</span></div>
+  </div>
+  <div class="stack-card" data-aos="fade-up" data-aos-delay="240">
+    <div class="stack-card__header"><span class="stack-card__icon">📦</span><div><div class="stack-card__name">Docker Compose</div><div class="stack-card__version">v2.x · Orchestration</div></div><span class="stack-badge stack-badge--blue">ORCHESTRATION</span></div>
+    <p class="stack-card__desc"><code>--scale flask=N</code> demonstrates horizontal scaling without Kubernetes overhead. Defines the full multi-container topology in a single YAML file.</p>
+    <div class="stack-card__tags"><span class="tag">Service Mesh</span><span class="tag">Scaling</span><span class="tag">Volumes</span></div>
+  </div>
+  <div class="stack-card" data-aos="fade-up" data-aos-delay="300">
+    <div class="stack-card__header"><span class="stack-card__icon">🌐</span><div><div class="stack-card__name">HTML / CSS / JS</div><div class="stack-card__version">Vanilla · No framework</div></div><span class="stack-badge stack-badge--purple">FRONTEND</span></div>
+    <p class="stack-card__desc">Purposely framework-free frontend. CSS custom properties, CSS Grid, and a canvas bar chart demonstrate modern web capability without build-tool overhead.</p>
+    <div class="stack-card__tags"><span class="tag">CSS Grid</span><span class="tag">CSS Variables</span><span class="tag">Canvas API</span></div>
+  </div>
+</div>
+
+<div class="arch-diagram" data-aos="fade-up">
+  <div class="arch-diagram__header">COMPOSE SERVICE TOPOLOGY</div>
+  <div class="arch-diagram__body">
+    <div class="arch-box arch-box--nginx">nginx<br/><span>port 5002:80</span></div>
+    <div class="arch-lines"><div class="arch-line"></div><div class="arch-dot"></div><div class="arch-line"></div></div>
+    <div class="arch-cluster">
+      <div class="arch-box arch-box--flask">flask_1<br/><span>:5000</span></div>
+      <div class="arch-box arch-box--flask">flask_2<br/><span>:5000</span></div>
+      <div class="arch-box arch-box--flask">flask_N<br/><span>:5000</span></div>
+    </div>
+    <div class="arch-line arch-line--v"></div>
+    <div class="arch-box arch-box--redis">redis<br/><span>:6379 + volume</span></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Pipeline{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="page-header__eyebrow">CONTAINER ARCHITECTURE</div>
+  <h1 class="page-header__title">Request Pipeline<span class="page-header__cursor">▋</span></h1>
+  <p class="page-header__sub">Trace a live request as it travels from browser to Redis and back.</p>
+</section>
+
+<div class="pipeline-wrap">
+  <div class="pipeline-track" aria-hidden="true"><div class="pipeline-packet" id="pipelinePacket"></div></div>
+  <div class="pipeline-nodes">
+    <div class="pnode" data-aos="zoom-in">
+      <div class="pnode__icon">🌐</div><div class="pnode__label">CLIENT</div>
+      <div class="pnode__sub">Your Browser</div><div class="pnode__detail">HTTP GET :5002</div>
+    </div>
+    <div class="pnode-arrow"><svg viewBox="0 0 60 20" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="10" x2="50" y2="10" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 2"/><polygon points="50,5 60,10 50,15" fill="var(--accent)"/></svg><span class="pnode-arrow__label">TCP/HTTP</span></div>
+    <div class="pnode pnode--highlight" data-aos="zoom-in" data-aos-delay="80">
+      <div class="pnode__icon">⚡</div><div class="pnode__label">NGINX</div>
+      <div class="pnode__sub">Reverse Proxy</div><div class="pnode__detail">Port 5002 → 5000</div>
+      <div class="pnode__badge">Load Balancer</div>
+    </div>
+    <div class="pnode-arrow"><svg viewBox="0 0 60 20" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="10" x2="50" y2="10" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 2"/><polygon points="50,5 60,10 50,15" fill="var(--accent)"/></svg><span class="pnode-arrow__label">Round-robin</span></div>
+    <div class="pnode" data-aos="zoom-in" data-aos-delay="160">
+      <div class="pnode__icon">🐍</div><div class="pnode__label">FLASK</div>
+      <div class="pnode__sub">App Container(s)</div><div class="pnode__detail">×N replicas</div>
+      <div class="pnode__badge pnode__badge--blue">Scalable</div>
+    </div>
+    <div class="pnode-arrow"><svg viewBox="0 0 60 20" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="10" x2="50" y2="10" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 2"/><polygon points="50,5 60,10 50,15" fill="var(--accent)"/></svg><span class="pnode-arrow__label">redis-py</span></div>
+    <div class="pnode pnode--highlight" data-aos="zoom-in" data-aos-delay="240">
+      <div class="pnode__icon">🔴</div><div class="pnode__label">REDIS</div>
+      <div class="pnode__sub">In-Memory Store</div><div class="pnode__detail">Port 6379</div>
+      <div class="pnode__badge">Persistent Vol.</div>
+    </div>
+  </div>
+</div>
+
+<div class="explain-grid">
+  <div class="explain-card" data-aos="fade-up">
+    <div class="explain-card__num">01</div>
+    <h3 class="explain-card__title">Nginx as Gateway</h3>
+    <p class="explain-card__body">All external traffic hits Nginx on port 5002. Nginx terminates the connection, applies upstream round-robin across Flask instances, and forwards the request over Docker's internal bridge network — keeping Flask containers fully isolated.</p>
+  </div>
+  <div class="explain-card" data-aos="fade-up" data-aos-delay="60">
+    <div class="explain-card__num">02</div>
+    <h3 class="explain-card__title">Horizontal Flask Scaling</h3>
+    <p class="explain-card__body"><code>docker compose up --scale flask=3</code> spawns multiple identical Flask containers. Because state lives in Redis (not in the container), any replica can serve any request — the defining property of a stateless service.</p>
+  </div>
+  <div class="explain-card" data-aos="fade-up" data-aos-delay="120">
+    <div class="explain-card__num">03</div>
+    <h3 class="explain-card__title">Redis Persistence</h3>
+    <p class="explain-card__body">Visit counters survive container restarts because Redis is backed by a named Docker volume (<code>redis-data</code>). The volume mounts to <code>/data</code> inside the Redis container and uses RDB snapshotting.</p>
+  </div>
+  <div class="explain-card" data-aos="fade-up" data-aos-delay="180">
+    <div class="explain-card__num">04</div>
+    <h3 class="explain-card__title">Health &amp; Observability</h3>
+    <p class="explain-card__body"><code>GET /health</code> returns a JSON payload with Redis status, container ID, and uptime — ready for a load balancer health-check probe or an uptime monitor. <code>GET /api/stats</code> exposes raw metrics for external tooling.</p>
+  </div>
+</div>
+
+<div class="code-panel" data-aos="fade-up">
+  <div class="code-panel__header">
+    <span class="code-panel__title">nginx.conf — upstream definition</span>
+    <span class="code-panel__lang">NGINX</span>
+  </div>
+  <pre class="code-panel__body"><code>upstream flask_cluster {
+    server flask:5000;
+}
+
+server {
+    listen 5002;
+    location / {
+        proxy_pass         http://flask_cluster;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+    }
+}</code></pre>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>animatePipelinePacket();</script>
+{% endblock %}

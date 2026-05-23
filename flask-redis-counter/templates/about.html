@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="page-header__eyebrow">MISSION BRIEF</div>
+  <h1 class="page-header__title">About This Project<span class="page-header__cursor">▋</span></h1>
+  <p class="page-header__sub">The "why" behind every architectural decision.</p>
+</section>
+
+<div class="about-layout">
+  <div class="about-narrative">
+    <div class="about-block" data-aos="fade-right">
+      <h2 class="about-block__title"><span class="about-block__num">01 /</span> Origin</h2>
+      <p>This project began as a DevOps challenge: containerise a Python web app, add persistence, and demonstrate horizontal scaling with a reverse proxy. I took that brief and turned it into a production-flavoured reference architecture that shows the full request lifecycle — not just "it works."</p>
+    </div>
+    <div class="about-block" data-aos="fade-right" data-aos-delay="60">
+      <h2 class="about-block__title"><span class="about-block__num">02 /</span> Design Decisions</h2>
+      <ul class="about-list">
+        <li><strong>Stateless Flask</strong> — no session data stored in-process, so any replica can handle any request.</li>
+        <li><strong>Redis for shared state</strong> — the only place mutable data lives; containers are ephemeral, Redis is not.</li>
+        <li><strong>Nginx as the sole public interface</strong> — Flask is never exposed directly, mirroring real production topology.</li>
+        <li><strong>Named Docker volumes</strong> — data survives <code>docker compose down</code>; only <code>--volumes</code> wipes it.</li>
+        <li><strong>Environment variables for config</strong> — <code>REDIS_HOST</code>, <code>REDIS_PORT</code> follow twelve-factor app principles.</li>
+      </ul>
+    </div>
+    <div class="about-block" data-aos="fade-right" data-aos-delay="120">
+      <h2 class="about-block__title"><span class="about-block__num">03 /</span> What I Learned</h2>
+      <p>The trickiest part wasn't the code — it was understanding how Docker's internal DNS resolves service names at runtime, and why Nginx needs <code>resolver 127.0.0.11</code> when using variables in <code>proxy_pass</code>. Debugging container networking with <code>docker exec</code> and <code>curl</code> from inside a container became second nature.</p>
+    </div>
+    <div class="about-block" data-aos="fade-right" data-aos-delay="180">
+      <h2 class="about-block__title"><span class="about-block__num">04 /</span> Next Steps</h2>
+      <ul class="about-list">
+        <li>Swap Nginx for a Traefik reverse proxy with automatic TLS via Let's Encrypt.</li>
+        <li>Add Prometheus metrics endpoint + Grafana dashboard for real observability.</li>
+        <li>Write a GitHub Actions CI pipeline to build, test, and push images on every commit.</li>
+        <li>Deploy to a cloud VM (DigitalOcean / EC2) behind a domain name.</li>
+        <li>Explore Kubernetes migration: Deployment + Service + PersistentVolumeClaim.</li>
+      </ul>
+    </div>
+  </div>
+
+  <aside class="about-aside">
+    <div class="profile-card" data-aos="fade-left">
+      <div class="profile-card__avatar">A</div>
+      <div class="profile-card__name">Asia</div>
+      <div class="profile-card__title">DevOps &amp; Backend Engineer</div>
+      <div class="profile-card__divider"></div
